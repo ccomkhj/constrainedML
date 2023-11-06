@@ -9,7 +9,7 @@ from sklearn.neural_network._stochastic_optimizers import SGDOptimizer, AdamOpti
 from sklearn.model_selection import train_test_split
 
 class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
-    def fit(self, X, y):
+    def fit(self, X, y, min_coef=None, max_coef=None):
         """Fit the model to data matrix X and target(s) y.
 
         Parameters
@@ -26,6 +26,10 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
         self : object
             Returns a trained MLP model.
         """
+        feature_count = X.shape[-1]
+        self.min_coef_ = self._verify_coef(feature_count, min_coef, -np.inf).flatten()
+        self.max_coef_ = self._verify_coef(feature_count, max_coef, np.inf).flatten()
+        
         return self._constrained_fit(X, y, incremental=False)
     
     
@@ -79,7 +83,7 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
         ]
 
         # Run the Stochastic optimization solver
-        if self.solver in ["sgd", "adam"]:
+        assert self.solver in ["sgd", "adam"], "ConstrainMLP only support sgd and adam optimizer.
             self._fit_constrained_stochastic(
                 X,
                 y,
@@ -89,12 +93,6 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
                 intercept_grads,
                 layer_units,
                 incremental,
-            )
-
-        # Run the LBFGS solver
-        elif self.solver == "lbfgs":
-            self._fit_lbfgs(
-                X, y, activations, deltas, coef_grads, intercept_grads, layer_units
             )
 
         # validate parameter weights
@@ -180,7 +178,6 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
                     y_batch = y[batch_slice]
 
                     activations[0] = X_batch
-                    # TODO: Clip coef_grads' relevant section!
                     batch_loss, coef_grads, intercept_grads = self._backprop(
                         X_batch,
                         y_batch,
@@ -196,6 +193,7 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
                     # update weights
                     grads = coef_grads + intercept_grads
                     self._optimizer.update_params(params, grads)
+                    self._update_coef_using_constrain(params)
 
                 self.n_iter_ += 1
                 self.loss_ = accumulated_loss / X.shape[0]
@@ -250,5 +248,13 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
             # restore best weights
             self.coefs_ = self._best_coefs
             self.intercepts_ = self._best_intercepts
-            
-            
+        
+        self._after_training()
+
+    def _update_coef_using_constrain(self, coef_grads):
+        for coef_idx, (min_coef, max_coef) in enumerate(zip(self.min_coef_, self.max_coef_)):
+            # clipping is applied only to the first node.
+            coef_grads[0][coef_idx] = np.clip(coef_grads[0][coef_idx], min_coef, max_coef)
+    
+    def _after_training(self):
+        pass

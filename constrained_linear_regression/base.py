@@ -82,7 +82,7 @@ class BaseConstrainedLinearRegression(LinearModel, RegressorMixin):
 class BaseConstrainedMultilayerPerceptron(MLPRegressor, RegressorMixin):
     def __init__(
         self,
-        hidden_layer_sizes=(100,),
+        hidden_layer_sizes=(10,),
         activation="relu",
         solver="adam",
         alpha=0.0001,
@@ -137,3 +137,13 @@ class BaseConstrainedMultilayerPerceptron(MLPRegressor, RegressorMixin):
     @abc.abstractmethod
     def fit(self, X, y):
         pass
+    
+    def _verify_coef(self, feature_count, coef, value, idx=0):
+        if coef is not None:
+            coef_ = coef
+            assert (
+                coef_.shape[-1] == feature_count
+            ), "Incorrect shape for coef_, the second dimension must match feature_count"
+        else:
+            coef_ = np.ones((idx + 1, feature_count)) * value
+        return coef_
