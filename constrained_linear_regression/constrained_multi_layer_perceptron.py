@@ -83,17 +83,17 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
         ]
 
         # Run the Stochastic optimization solver
-        assert self.solver in ["sgd", "adam"], "ConstrainMLP only support sgd and adam optimizer.
-            self._fit_constrained_stochastic(
-                X,
-                y,
-                activations,
-                deltas,
-                coef_grads,
-                intercept_grads,
-                layer_units,
-                incremental,
-            )
+        assert self.solver in ["sgd", "adam"], "ConstrainMLP only support sgd and adam optimizer."
+        self._fit_constrained_stochastic(
+            X,
+            y,
+            activations,
+            deltas,
+            coef_grads,
+            intercept_grads,
+            layer_units,
+            incremental,
+        )
 
         # validate parameter weights
         weights = chain(self.coefs_, self.intercepts_)
