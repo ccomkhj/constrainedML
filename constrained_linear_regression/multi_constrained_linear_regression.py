@@ -83,6 +83,9 @@ class MultiConstrainedLinearRegression(ConstrainedLinearRegression):
         learning_rate=1.0,
         max_iter=10000,
         penalty_rate=0,
+        valid_ratio=0,
+        training_losses=[],
+        validation_losses=[],
     ):
         super().__init__(
             fit_intercept,
@@ -94,11 +97,27 @@ class MultiConstrainedLinearRegression(ConstrainedLinearRegression):
             tol,
             learning_rate,
             max_iter,
+            valid_ratio,
+            training_losses,
+            validation_losses,
         )
         self.penalty_rate = penalty_rate
 
-    def fit(self, X, y, min_coef=None, max_coef=None, initial_beta=None):
+    def fit(
+        self,
+        X,
+        y,
+        min_coef=None,
+        max_coef=None,
+        initial_beta=None,
+    ):
         X, y, X_offset, y_offset, X_scale = self.preprocess(X, y)
+
+        if self.valid_ratio > 0:
+            # Split the data into training and validation sets
+            X, X_valid, y, y_valid = self._train_test_split(X, y)
+        else:
+            X_valid, y_valid = None, None
         feature_count = X.shape[-1]
         min_coef_ = self._verify_coef(
             feature_count,
@@ -132,8 +151,10 @@ class MultiConstrainedLinearRegression(ConstrainedLinearRegression):
             step += 1
             prev_beta = beta.copy()
 
+            self._save_mae(X, beta, y, loss_scale, X_valid, y_valid)
+            grad = self._calculate_gradient(X, beta, y)
+
             for i, _ in enumerate(beta):
-                grad = self._calculate_gradient(X, beta, y)
                 if self.penalty_rate:
                     progress = step / self.max_iter
                     grad += (

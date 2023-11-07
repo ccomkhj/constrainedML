@@ -13,6 +13,8 @@ except ImportError:
 from sklearn.neural_network import MLPRegressor
 from sklearn.base import RegressorMixin
 from sklearn.utils import check_X_y
+from sklearn.model_selection import train_test_split
+
 
 class BaseConstrainedLinearRegression(LinearModel, RegressorMixin):
     def __init__(
@@ -26,6 +28,9 @@ class BaseConstrainedLinearRegression(LinearModel, RegressorMixin):
         tol=1e-15,
         learning_rate=1.0,
         max_iter=10000,
+        valid_ratio=0,
+        training_losses=[],
+        validation_losses=[],
     ):
         self.fit_intercept = fit_intercept
         self.normalize = normalize
@@ -36,6 +41,9 @@ class BaseConstrainedLinearRegression(LinearModel, RegressorMixin):
         self.tol = tol
         self.learning_rate = learning_rate
         self.max_iter = max_iter
+        self.valid_ratio = valid_ratio
+        self.training_losses = training_losses
+        self.validation_losses = validation_losses
 
     def preprocess(self, X, y):
         X, y = check_X_y(
@@ -50,9 +58,12 @@ class BaseConstrainedLinearRegression(LinearModel, RegressorMixin):
             y,
             fit_intercept=self.fit_intercept,
             normalize=self.normalize,
-            copy=self.copy_X
+            copy=self.copy_X,
         )
-        
+
+    def _train_test_split(self, X, y):
+        return train_test_split(X, y, test_size=self.valid_ratio, random_state=42)
+
     def _verify_coef(self, feature_count, coef, value, idx=0):
         if coef is not None:
             coef_ = coef
@@ -62,7 +73,7 @@ class BaseConstrainedLinearRegression(LinearModel, RegressorMixin):
         else:
             coef_ = np.ones((idx + 1, feature_count)) * value
         return coef_
-    
+
     def _verify_initial_beta(self, feature_count, initial_beta):
         if initial_beta is not None:
             beta = initial_beta
@@ -74,10 +85,21 @@ class BaseConstrainedLinearRegression(LinearModel, RegressorMixin):
     def _set_coef(self, beta):
         self.coef_ = beta
 
+    def _save_mae(self, X, beta, y, loss_scale, X_valid, y_valid):
+        self.training_losses.append(
+            np.sum(np.abs(np.dot(X, beta) - y)) / loss_scale / (1 - self.valid_ratio)
+        )
+        if self.valid_ratio > 0:
+            self.validation_losses.append(
+                np.sum(np.abs(np.dot(X_valid, beta) - y_valid))
+                / loss_scale
+                / self.valid_ratio
+            )
+
     @abc.abstractmethod
     def fit(self, X, y):
         pass
-    
+
 
 class BaseConstrainedMultilayerPerceptron(MLPRegressor, RegressorMixin):
     def __init__(
@@ -106,7 +128,6 @@ class BaseConstrainedMultilayerPerceptron(MLPRegressor, RegressorMixin):
         n_iter_no_change=10,
         max_fun=15000,
     ):
-    
         super().__init__(
             hidden_layer_sizes=hidden_layer_sizes,
             activation=activation,
@@ -137,7 +158,7 @@ class BaseConstrainedMultilayerPerceptron(MLPRegressor, RegressorMixin):
     @abc.abstractmethod
     def fit(self, X, y):
         pass
-    
+
     def _verify_coef(self, feature_count, coef, value, idx=0):
         if coef is not None:
             coef_ = coef
