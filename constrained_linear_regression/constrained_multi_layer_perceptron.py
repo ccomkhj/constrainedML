@@ -2,11 +2,15 @@ import numpy as np
 from itertools import chain
 import warnings
 
-from .base import BaseConstrainedMultilayerPerceptron
+import scipy.optimize
+
+from sklearn.utils.optimize import _check_optimize_result
 from sklearn.base import is_classifier
 from sklearn.utils import gen_batches, check_random_state
 from sklearn.neural_network._stochastic_optimizers import SGDOptimizer, AdamOptimizer
 from sklearn.model_selection import train_test_split
+from .base import BaseConstrainedMultilayerPerceptron
+
 
 class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
     def fit(self, X, y, min_coef=None, max_coef=None):
@@ -29,10 +33,9 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
         feature_count = X.shape[-1]
         self.min_coef_ = self._verify_coef(feature_count, min_coef, -np.inf).flatten()
         self.max_coef_ = self._verify_coef(feature_count, max_coef, np.inf).flatten()
-        
+
         return self._constrained_fit(X, y, incremental=False)
-    
-    
+
     def _constrained_fit(self, X, y, incremental=False):
         # Make sure self.hidden_layer_sizes is a list
         hidden_layer_sizes = self.hidden_layer_sizes
@@ -61,7 +64,7 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
         self.n_outputs_ = y.shape[1]
 
         layer_units = [n_features] + hidden_layer_sizes + [self.n_outputs_]
-        
+
         # check random state
         self._random_state = check_random_state(self.random_state)
 
@@ -83,17 +86,26 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
         ]
 
         # Run the Stochastic optimization solver
-        assert self.solver in ["sgd", "adam"], "ConstrainMLP only support sgd and adam optimizer."
-        self._fit_constrained_stochastic(
-            X,
-            y,
-            activations,
-            deltas,
-            coef_grads,
-            intercept_grads,
-            layer_units,
-            incremental,
-        )
+        if self.solver in ["sgd", "adam"]:
+            self._fit_constrained_stochastic(
+                X,
+                y,
+                activations,
+                deltas,
+                coef_grads,
+                intercept_grads,
+                layer_units,
+                incremental,
+            )
+
+        # Run the LBFGS solver
+        elif self.solver == "lbfgs":
+            self._fit_constrained_lbfgs(
+                X, y, activations, deltas, coef_grads, intercept_grads, layer_units
+            )
+
+        else:
+            raise f"unknown solver: {self.solver}"
 
         # validate parameter weights
         weights = chain(self.coefs_, self.intercepts_)
@@ -104,7 +116,7 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
             )
 
         return self
-    
+
     def _fit_constrained_stochastic(
         self,
         X,
@@ -116,7 +128,6 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
         layer_units,
         incremental,
     ):
-
         params = self.coefs_ + self.intercepts_
         if not incremental or not hasattr(self, "_optimizer"):
             if self.solver == "sgd":
@@ -170,7 +181,6 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
 
         try:
             for it in range(self.max_iter):
-
                 accumulated_loss = 0.0
                 for batch_slice in gen_batches(n_samples, batch_size):
                     # It doesn't shuffle because the sequence matters in the constrained ML.
@@ -248,13 +258,122 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
             # restore best weights
             self.coefs_ = self._best_coefs
             self.intercepts_ = self._best_intercepts
-        
+
         self._after_training()
 
     def _update_coef_using_constrain(self, coef_grads):
-        for coef_idx, (min_coef, max_coef) in enumerate(zip(self.min_coef_, self.max_coef_)):
+        for coef_idx, (min_coef, max_coef) in enumerate(
+            zip(self.min_coef_, self.max_coef_)
+        ):
             # clipping is applied only to the first node.
-            coef_grads[0][coef_idx] = np.clip(coef_grads[0][coef_idx], min_coef, max_coef)
-    
+            coef_grads[0][coef_idx] = np.clip(
+                coef_grads[0][coef_idx], min_coef, max_coef
+            )
+
     def _after_training(self):
+        # This is useful only for multi models.
         pass
+
+    def _fit_constrained_lbfgs(
+        self, X, y, activations, deltas, coef_grads, intercept_grads, layer_units
+    ):
+        # Store meta information for the parameters
+        self._coef_indptr = []
+        self._intercept_indptr = []
+        start = 0
+
+        # Save sizes and indices of coefficients for faster unpacking
+        for i in range(self.n_layers_ - 1):
+            n_fan_in, n_fan_out = layer_units[i], layer_units[i + 1]
+
+            end = start + (n_fan_in * n_fan_out)
+            self._coef_indptr.append((start, end, (n_fan_in, n_fan_out)))
+            start = end
+
+        # Save sizes and indices of intercepts for faster unpacking
+        for i in range(self.n_layers_ - 1):
+            end = start + layer_units[i + 1]
+            self._intercept_indptr.append((start, end))
+            start = end
+
+        # Run LBFGS
+        packed_coef_inter = _pack(self.coefs_, self.intercepts_)
+
+        if self.verbose is True or self.verbose >= 1:
+            iprint = 1
+        else:
+            iprint = -1
+
+        opt_res = scipy.optimize.minimize(
+            self._loss_grad_constrained_lbfgs,
+            packed_coef_inter,
+            method="L-BFGS-B",
+            jac=True,
+            options={
+                "maxfun": self.max_fun,
+                "maxiter": self.max_iter,
+                "iprint": iprint,
+                "gtol": self.tol,
+            },
+            args=(X, y, activations, deltas, coef_grads, intercept_grads),
+        )
+        self.n_iter_ = _check_optimize_result("lbfgs", opt_res, self.max_iter)
+        self.loss_ = opt_res.fun
+        self._unpack(opt_res.x)
+        self._after_training()
+
+    def _loss_grad_constrained_lbfgs(
+        self, packed_coef_inter, X, y, activations, deltas, coef_grads, intercept_grads
+    ):
+        """Compute the MLP loss function and its corresponding derivatives
+        with respect to the different parameters given in the initialization.
+
+        Returned gradients are packed in a single vector so it can be used
+        in lbfgs
+
+        Parameters
+        ----------
+        packed_coef_inter : ndarray
+            A vector comprising the flattened coefficients and intercepts.
+
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The input data.
+
+        y : ndarray of shape (n_samples,)
+            The target values.
+
+        activations : list, length = n_layers - 1
+            The ith element of the list holds the values of the ith layer.
+
+        deltas : list, length = n_layers - 1
+            The ith element of the list holds the difference between the
+            activations of the i + 1 layer and the backpropagated error.
+            More specifically, deltas are gradients of loss with respect to z
+            in each layer, where z = wx + b is the value of a particular layer
+            before passing through the activation function
+
+        coef_grads : list, length = n_layers - 1
+            The ith element contains the amount of change used to update the
+            coefficient parameters of the ith layer in an iteration.
+
+        intercept_grads : list, length = n_layers - 1
+            The ith element contains the amount of change used to update the
+            intercept parameters of the ith layer in an iteration.
+
+        Returns
+        -------
+        loss : float
+        grad : array-like, shape (number of nodes of all layers,)
+        """
+        self._unpack(packed_coef_inter)
+        loss, coef_grads, intercept_grads = self._backprop(
+            X, y, activations, deltas, coef_grads, intercept_grads
+        )
+        self._update_coef_using_constrain(coef_grads)  # it throws error.
+        grad = _pack(coef_grads, intercept_grads)
+        return loss, grad
+
+
+def _pack(coefs_, intercepts_):
+    """Pack the parameters into a single vector."""
+    return np.hstack([l.ravel() for l in coefs_ + intercepts_])

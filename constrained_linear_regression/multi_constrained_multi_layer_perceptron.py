@@ -42,11 +42,13 @@ class MultiConstrainedMultilayerPerceptron(ConstrainedMultilayerPerceptron):
         return self._constrained_fit(X, y, incremental=False)
 
     def _update_coef_using_constrain(self, coef_grads):
-        min_coefs = self.min_coef_[MultiConstrainedMultilayerPerceptron.global_horizon_count]
-        max_coefs = self.max_coef_[MultiConstrainedMultilayerPerceptron.global_horizon_count]
-        for coef_idx, (min_coef, max_coef) in enumerate(
-            zip(min_coefs, max_coefs)
-        ):
+        min_coefs = self.min_coef_[
+            MultiConstrainedMultilayerPerceptron.global_horizon_count
+        ]
+        max_coefs = self.max_coef_[
+            MultiConstrainedMultilayerPerceptron.global_horizon_count
+        ]
+        for coef_idx, (min_coef, max_coef) in enumerate(zip(min_coefs, max_coefs)):
             # clipping is applied only to the first node.
             coef_grads[0][coef_idx] = np.clip(
                 coef_grads[0][coef_idx],

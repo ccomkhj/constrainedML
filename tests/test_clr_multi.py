@@ -14,7 +14,7 @@ from constrained_linear_regression.multi_constrained_multi_layer_perceptron impo
 from sklearn.datasets import load_linnerud
 
 
-def test_multi_constraint_mlp():
+def test_multi_constraint_mlp_lbfgs(solver="lbfgs"):
     X, Y = load_linnerud(return_X_y=True)
     y = Y[:, 0]
     random_state = 7
@@ -34,10 +34,47 @@ def test_multi_constraint_mlp():
     max_coef[3, 2] = 0
 
     base_model = ConstrainedMultilayerPerceptron(
-        hidden_layer_sizes=hidden_layer_sizes, random_state=random_state
+        solver=solver, hidden_layer_sizes=hidden_layer_sizes, random_state=random_state
     )
     model = MultiConstrainedMultilayerPerceptron(
-        hidden_layer_sizes=hidden_layer_sizes, random_state=random_state
+        solver=solver, hidden_layer_sizes=hidden_layer_sizes, random_state=random_state
+    )
+
+    for idx in range(horizon):
+        base_model.fit(X, y, min_coef=min_coef[idx], max_coef=max_coef[idx])
+        model.fit(X, y, min_coef=min_coef, max_coef=max_coef)
+        for layer_idx in range(model.n_layers_ - 1):
+            assert np.allclose(
+                base_model.coefs_[layer_idx], model.coefs_[layer_idx]
+            ), f"fails at {idx}th horizon in {layer_idx}th layer."
+    model.reset()
+    assert model.global_horizon_count == 0  # Check reset function
+
+
+def test_multi_constraint_mlp_sgd(solver="sgd"):
+    X, Y = load_linnerud(return_X_y=True)
+    y = Y[:, 0]
+    random_state = 7
+    hidden_layer_sizes = (3,)
+    horizon = 4
+    min_coef = np.ones((horizon, 3)) * -1
+    max_coef = np.ones((horizon, 3)) * 2
+
+    min_coef[0, 0] = -3
+    min_coef[1, 1] = -1
+    min_coef[2, 1] = 0
+    min_coef[3, 2] = 0
+
+    max_coef[0, 0] = -3
+    max_coef[1, 1] = 1
+    max_coef[2, 1] = 0
+    max_coef[3, 2] = 0
+
+    base_model = ConstrainedMultilayerPerceptron(
+        solver=solver, hidden_layer_sizes=hidden_layer_sizes, random_state=random_state
+    )
+    model = MultiConstrainedMultilayerPerceptron(
+        solver=solver, hidden_layer_sizes=hidden_layer_sizes, random_state=random_state
     )
 
     for idx in range(horizon):

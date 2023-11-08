@@ -43,17 +43,45 @@ def test_constrainedmlp():
     assert np.all(model.coefs_[0][0] >= 0)  # Not sure if the indexing is corret.
 
 
-def test_unconstrainedmlp():
+def test_unconstrainedmlp_sgd(solver="sgd"):
     X, Y = load_linnerud(return_X_y=True)
     y = Y[:, 0]
     random_state = 7
     hidden_layer_sizes = (3,)
     model = ConstrainedMultilayerPerceptron(
-        hidden_layer_sizes=hidden_layer_sizes, random_state=random_state
+        solver=solver, hidden_layer_sizes=hidden_layer_sizes, random_state=random_state
     )
     model.fit(X, y)
     baseline = MLPRegressor(
-        shuffle=False, hidden_layer_sizes=hidden_layer_sizes, random_state=random_state
+        solver=solver,
+        shuffle=False,
+        hidden_layer_sizes=hidden_layer_sizes,
+        random_state=random_state,
+    )
+    baseline.fit(X, y)
+    for baseline_coef, model_coef in zip(baseline.coefs_, model.coefs_):
+        assert np.allclose(baseline_coef, model_coef)
+
+    for baseline_intercept, model_intercept in zip(
+        baseline.intercepts_, model.intercepts_
+    ):
+        assert np.allclose(baseline_intercept, model_intercept)
+
+
+def test_unconstrainedmlp_lbfgs(solver="lbfgs"):
+    X, Y = load_linnerud(return_X_y=True)
+    y = Y[:, 0]
+    random_state = 7
+    hidden_layer_sizes = (3,)
+    model = ConstrainedMultilayerPerceptron(
+        solver=solver, hidden_layer_sizes=hidden_layer_sizes, random_state=random_state
+    )
+    model.fit(X, y)
+    baseline = MLPRegressor(
+        solver=solver,
+        shuffle=False,
+        hidden_layer_sizes=hidden_layer_sizes,
+        random_state=random_state,
     )
     baseline.fit(X, y)
     for baseline_coef, model_coef in zip(baseline.coefs_, model.coefs_):
@@ -66,5 +94,5 @@ def test_unconstrainedmlp():
 
 
 if __name__ == "__main__":
-    test_constrainedmlp()
-    test_unconstrainedmlp()
+    test_unconstrainedmlp_lbfgs()
+    # test_unconstrainedmlp_sgd()
