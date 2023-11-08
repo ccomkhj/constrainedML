@@ -2,9 +2,7 @@
 
 This package also provides out-of-box compatibility with [Unit8's Darts](https://unit8co.github.io/darts/), a forecasting library. Darts supports a rich variety of models including but not limited to ARIMA, Prophet, Theta, and a host of others. 
 
-One of the major features of `MultiConstrainedLinearRegression` when used with Darts, is the ability to set different constraints for coefficients for each custom horizon.
-
-The `MultiConstrainedLinearRegression` class comes with the optional functionality of handling constraints through penalties, an approach not unlike the Ridge regularization, but with the added awareness of the pre-specified boundaries in the form of minimum and maximum constraints. 
+One of the major features of `MultiConstrainedMultiLayerPerceptron` when used with Darts, is the ability to set different constraints for coefficients for each custom horizon.
 
 
 Here's an example using dummy data:
@@ -12,7 +10,7 @@ Here's an example using dummy data:
 ```Python
 import numpy as np
 import pandas as pd
-from constrained_linear_regression.multi_constrained_linear_regression import MultiConstrainedLinearRegression
+from constrained_linear_regression.multi_constrained_multi_layer_perceptron import MultiConstrainedMultilayerPerceptron
 from darts.models import RegressionModel
 from darts.timeseries import TimeSeries
 from darts.dataprocessing.transformers import Scaler
@@ -51,7 +49,7 @@ def get_total_lags(lag_feature):
 total_lags = get_total_lags(lag_feature) # numer of features
 horizon = 14 # forecast horizon days
 
-custom_model = MultiConstrainedLinearRegression(fit_intercept=False, nonnegative=True)
+custom_model = MultiConstrainedMultilayerPerceptron(solver = 'lbfgs', hidden_layer_sizes=4, batch_size='auto', activation='relu')
 
 model = RegressionModel(lags=1, output_chunk_length=horizon, lags_past_covariates=lag_feature, model=custom_model, multi_models=True,
                        add_encoders={'transformer': Scaler()})
@@ -77,10 +75,10 @@ pred = model.predict(n=horizon, past_covariates=series_feature)
 
 # Output the learned coefficients and intercepts
 for i, estimator in enumerate(model.model.estimators_):
-    print(f"The coefficients for day {i+1} are {estimator.coef_}")
-    print(f"The intercept for day {i+1} is {estimator.intercept_}")
+    print(f"The coefficients for day {i+1} are {estimator.coefs_}")
+    print(f"The intercept for day {i+1} is {estimator.intercepts_}")
 ```
-In this example, the `MultiConstrainedLinearRegression` model is used with Darts' `RegressionModel` for sequence forecasts. We apply different constraints for each day within the forecast horizon, controlled by the `min_coef` and `max_coef` parameters. 
+In this example, the `MultiConstrainedMultilayerPerceptron` model is used with Darts' `RegressionModel` for sequence forecasts. We apply different constraints for each day within the forecast horizon, controlled by the `min_coef` and `max_coef` parameters. 
 
 This gives us the flexibility to independently control the linearity of the regression model for different periods within the forecast horizon.
 

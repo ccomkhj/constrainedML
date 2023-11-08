@@ -1,54 +1,43 @@
-# constrained-linear-regression
-[![PyPI version](https://badge.fury.io/py/constrained-linear-regression.svg)](https://badge.fury.io/py/constrained-linear-regression)
+# Multi-Constrained Regression and Neural Network Repository
 
-This is a Python implementation of constrained linear regression in scikit-learn style. 
-The current version supports upper and lower bound for each slope coefficient.
+## Overview
 
-It was developed after this question https://stackoverflow.com/questions/50410037
+This repository is dedicated to hosting and sharing advanced techniques in machine learning algorithms, particularly focusing on constraining the weights of certain inputs in regression and multi-layer perceptron. Inspired by the robust scikit-learn library, we have ventured into reverse engineering and extending its capabilities to fit custom requirements for specific types of learning problems.
 
-Installation:
-```pip install constrained-linear-regression```
+## Purpose
 
-You can use this model, for example, if you want all coefficients to be non-negative:
+The purpose of this repository is to provide a resource for machine learning practitioners looking to impose constraints on the input features' weights, which could be critical in certain domains such as finance, healthcare, and operational research. The reverse-engineered solutions herein allow for greater control over the machine learning model's behavior, ensuring that the influence of some features remains within desired boundaries.
 
-```Python
-from constrained_linear_regression import ConstrainedLinearRegression
-from sklearn.datasets import load_boston
-from sklearn.linear_model import LinearRegression
-X, y = load_boston(return_X_y=True)
-model = ConstrainedLinearRegression(nonnegative=True)
-model.fit(X, y)
-print(model.intercept_)
-print(model.coef_)
-```
-The output will be like
-```commandline
--36.99292986145538
-[0.         0.05286515 0.         4.12512386 0.         8.04017956
- 0.         0.         0.         0.         0.         0.02273805
- 0.        ]
-```
-You can also impose arbitrary bounds for any coefficients you choose 
-```Python
-model = ConstrainedLinearRegression()
-min_coef = np.repeat(-np.inf, X.shape[1])
-min_coef[0] = 0
-min_coef[4] = -1
-max_coef = np.repeat(4, X.shape[1])
-max_coef[3] = 2
-model.fit(X, y, max_coef=max_coef, min_coef=min_coef)
-print(model.intercept_)
-print(model.coef_)
-```
-The output will be 
-```commandline
-24.060175576410515
-[ 0.          0.04504673 -0.0354073   2.         -1.          4.
- -0.01343263 -1.17231216  0.2183103  -0.01375266 -0.7747823   0.01122374
- -0.56678676]
-```
+## Tutorials
 
-You can also set coefficients `lasso` and `ridge` if you want to apply the 
-corresponding penalties. For `lasso`, however, the output might not be exactly 
-equal to the result of `sklearn.linear_model.Lasso` due to the difference
-in the optimization algorithm.
+We provide detailed tutorials for the following topics:
+
+- **Multi-Constrained Linear Regression**: This tutorial takes you through the steps of creating a linear regression model that allows constraints to be placed on the weights of multiple input features.
+  - [Multi-Constrained Linear Regression Tutorial](tutorial/MultiConstrainedLinearRegression.md)
+
+- **Multi-Constrained Multi-Layer Perceptron**: Explore the implementation of a multi-layer perceptron (neural network) that incorporates constraints on the weights corresponding to specific input features.
+  - [Multi-Constrained Multi-Layer Perceptron Tutorial](tutorial/MultiConstrainedMultiLayerPerceptron.md)
+
+## Features
+
+- Reverse engineering techniques applied to scikit-learn's Linear Regression and MLP models
+- Custom weight constraint functionalities
+- Step-by-step tutorials for implementing the above models
+
+## Getting Started
+
+To get started with these tutorials and code, you should clone the repository and navigate to the `tutorial` directory where you can find the markdown files with detailed explanations and code samples.
+
+```bash
+git clone https://github.com/your-github-username/multi-constrained-models.git
+cd multi-constrained-models/tutorial
+Contributing
+We welcome contributions from the community! Whether it's improving the tutorials, extending the features of the models, or fixing bugs, please feel free to fork the repo, make your changes, and submit a pull request.
+
+Acknowledgments
+Thanks to the scikit-learn developers for their work on creating a comprehensive machine learning library.
+This project was inspired by the need for industry-specific machine learning models that require tailored constraints.
+Contact
+If you have any questions or feedback, please open an issue in the repository, and we'll get back to you as soon as possible.
+
+This template provides a structure that explains the purpose, features, tutorials, and contribution guide for your repository. You would want to replace placeholder links and text (such as `your-github-username`) with the actual ones corresponding to your GitHub repository details. Also, you need to ensure that the referenced files (`LICENSE.md`, etc.) exist and are in the correct locations within your repository.
