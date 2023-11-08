@@ -59,9 +59,9 @@ class ConstrainedLinearRegression(BaseConstrainedLinearRegression):
 
             step += 1
             prev_beta = beta.copy()
-            grad = self._calculate_gradient(X, beta, y)
 
             for i, _ in enumerate(beta):
+                grad = self._calculate_gradient(X, beta, y)
                 beta[i] = self._update_beta(
                     beta, i, grad, hessian, loss_scale, min_coef_, max_coef_
                 )

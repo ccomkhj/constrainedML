@@ -152,9 +152,9 @@ class MultiConstrainedLinearRegression(ConstrainedLinearRegression):
             prev_beta = beta.copy()
 
             self._save_mae(X, beta, y, loss_scale, X_valid, y_valid)
-            grad = self._calculate_gradient(X, beta, y)
 
             for i, _ in enumerate(beta):
+                grad = self._calculate_gradient(X, beta, y)
                 if self.penalty_rate:
                     progress = step / self.max_iter
                     grad += (
