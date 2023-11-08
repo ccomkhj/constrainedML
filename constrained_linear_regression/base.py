@@ -127,6 +127,7 @@ class BaseConstrainedMultilayerPerceptron(MLPRegressor, RegressorMixin):
         epsilon=1e-8,
         n_iter_no_change=10,
         max_fun=15000,
+        training_losses=[],
     ):
         super().__init__(
             hidden_layer_sizes=hidden_layer_sizes,
@@ -153,11 +154,15 @@ class BaseConstrainedMultilayerPerceptron(MLPRegressor, RegressorMixin):
             n_iter_no_change=n_iter_no_change,
             max_fun=max_fun,
         )
+        self.training_losses = training_losses
         assert shuffle is False, "shuffle should be False in the contrained ML."
 
     @abc.abstractmethod
     def fit(self, X, y):
         pass
+
+    def _save_mse(self, loss):
+        self.training_losses.append(loss)
 
     def _verify_coef(self, feature_count, coef, value, idx=0):
         if coef is not None:

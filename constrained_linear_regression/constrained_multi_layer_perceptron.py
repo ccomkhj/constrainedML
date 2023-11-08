@@ -371,6 +371,7 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
         )
         self._update_coef_using_constrain(coef_grads)  # it throws error.
         grad = _pack(coef_grads, intercept_grads)
+        self._save_mse(loss)
         return loss, grad
 
 
