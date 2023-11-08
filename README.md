@@ -31,10 +31,11 @@ To get started with these tutorials and code, you should clone the repository an
 ```bash
 git clone https://github.com/your-github-username/multi-constrained-models.git
 cd multi-constrained-models/tutorial
-Contributing
+```
+###Contributing
 We welcome contributions from the community! Whether it's improving the tutorials, extending the features of the models, or fixing bugs, please feel free to fork the repo, make your changes, and submit a pull request.
 
-Acknowledgments
+###Acknowledgments
 Thanks to the scikit-learn developers for their work on creating a comprehensive machine learning library.
 This project was inspired by the need for industry-specific machine learning models that require tailored constraints.
 Contact
