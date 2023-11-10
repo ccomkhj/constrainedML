@@ -1,19 +1,38 @@
+"""
+Huijo Kim (huijo@hexafarms.com)
+"""
 import numpy as np
+from sklearn.datasets import load_linnerud
+from sklearn.linear_model import LinearRegression
+from sklearn.neural_network import MLPRegressor
+
 from constrained_linear_regression.constrained_linear_regression import (
     ConstrainedLinearRegression,
 )
 from constrained_linear_regression.constrained_multi_layer_perceptron import (
     ConstrainedMultilayerPerceptron,
 )
-from sklearn.datasets import load_linnerud
-from sklearn.linear_model import LinearRegression
-from sklearn.neural_network import MLPRegressor
+from constrained_linear_regression.selective_drop_linear_regression import (
+    SelectiveDropLinearRegression,
+)
 
 
 def test_unconstrained():
     X, Y = load_linnerud(return_X_y=True)
     y = Y[:, 0]
     model = ConstrainedLinearRegression(nonnegative=False)
+    model.fit(X, y)
+    baseline = LinearRegression()
+    baseline.fit(X, y)
+    assert model.coef_.min() < 0
+    assert np.allclose(baseline.coef_, model.coef_)
+    assert np.isclose(baseline.intercept_, model.intercept_)
+
+
+def test_nodrop():
+    X, Y = load_linnerud(return_X_y=True)
+    y = Y[:, 0]
+    model = SelectiveDropLinearRegression(nonnegative=False)
     model.fit(X, y)
     baseline = LinearRegression()
     baseline.fit(X, y)

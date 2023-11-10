@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.datasets import load_linnerud
 from constrained_linear_regression.constrained_linear_regression import (
     ConstrainedLinearRegression,
 )
@@ -11,7 +12,40 @@ from constrained_linear_regression.constrained_multi_layer_perceptron import (
 from constrained_linear_regression.multi_constrained_multi_layer_perceptron import (
     MultiConstrainedMultilayerPerceptron,
 )
-from sklearn.datasets import load_linnerud
+from constrained_linear_regression.selective_drop_linear_regression import (
+    SelectiveDropLinearRegression,
+)
+from constrained_linear_regression.multi_selective_drop_linear_regression import (
+    MultiSelectiveDropLinearRegression,
+)
+
+
+def test_multi_selective_drop():
+    X, Y = load_linnerud(return_X_y=True)
+    y = Y[:, 0]
+    horizon = 4
+    min_coef = np.ones((horizon, 3)) * -1
+    max_coef = np.ones((horizon, 3)) * 2
+
+    min_coef[0, 0] = -3
+    min_coef[1, 1] = -1
+    min_coef[2, 1] = 0
+    min_coef[3, 2] = 0
+
+    max_coef[0, 0] = -3
+    max_coef[1, 1] = 1
+    max_coef[2, 1] = 0
+    max_coef[3, 2] = 0
+
+    base_model = SelectiveDropLinearRegression()
+    model = MultiSelectiveDropLinearRegression()
+
+    for idx in range(horizon):
+        base_model.fit(X, y, min_coef=min_coef[idx], max_coef=max_coef[idx])
+        model.fit(X, y, min_coef=min_coef, max_coef=max_coef)
+        assert np.allclose(base_model.coef_, model.coef_), f"fails at {idx}th horizon."
+    model.reset()
+    assert model.global_horizon_count == 0  # Check reset function
 
 
 def test_multi_constraint_mlp_lbfgs(solver="lbfgs"):
