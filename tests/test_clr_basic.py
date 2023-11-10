@@ -115,6 +115,21 @@ def test_constrainedmlp():
     assert np.all(model.coefs_[0][0] >= 0)  # Not sure if the indexing is corret.
 
 
+def test_constrained_selective_drop_mlp():
+    X, Y = load_linnerud(return_X_y=True)
+    y = Y[:, 0]
+    min_coef = np.repeat(0, 3)
+    max_coef = np.repeat(100, 3)
+    max_coef[0] = 0
+    random_state = 7
+    hidden_layer_sizes = (3,)
+    model = SelectiveDropMultilayerPerceptron(
+        hidden_layer_sizes=hidden_layer_sizes, random_state=random_state
+    )
+    model.fit(X, y, min_coef=min_coef, max_coef=max_coef)
+    assert np.all(model.coefs_[0][0] >= 0)  # Not sure if the indexing is corret.
+
+
 def test_unconstrainedmlp_sgd(solver="sgd"):
     X, Y = load_linnerud(return_X_y=True)
     y = Y[:, 0]
