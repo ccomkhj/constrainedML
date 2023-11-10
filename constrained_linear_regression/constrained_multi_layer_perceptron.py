@@ -33,7 +33,6 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
         feature_count = X.shape[-1]
         self.min_coef_ = self._verify_coef(feature_count, min_coef, -np.inf).flatten()
         self.max_coef_ = self._verify_coef(feature_count, max_coef, np.inf).flatten()
-
         return self._constrained_fit(X, y, incremental=False)
 
     def _constrained_fit(self, X, y, incremental=False):
@@ -261,14 +260,34 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
 
         self._after_training()
 
-    def _update_coef_using_constrain(self, coef_grads):
-        for coef_idx, (min_coef, max_coef) in enumerate(
-            zip(self.min_coef_, self.max_coef_)
-        ):
-            # clipping is applied only to the first node.
-            coef_grads[0][coef_idx] = np.clip(
-                coef_grads[0][coef_idx], min_coef, max_coef
+    def _update_coef_using_constrain(self, packed_coef_inter=None):
+        if self.solver == "lbfgs":
+            begin = self._coef_indptr[0][0]
+            end = self._coef_indptr[0][1]
+            shape = self._coef_indptr[0][2]
+            unpacked_coef_inter = np.reshape(
+                packed_coef_inter[begin:end],
+                shape,
             )
+
+            for coef_idx, (min_coef, max_coef) in enumerate(
+                zip(self.min_coef_, self.max_coef_)
+            ):
+                # clipping is applied only to the first node.
+                unpacked_coef_inter[coef_idx] = np.clip(
+                    unpacked_coef_inter[coef_idx], min_coef, max_coef
+                )
+            packed_coef_inter[begin:end] = unpacked_coef_inter.reshape(-1)
+            return packed_coef_inter
+
+        else:
+            for coef_idx, (min_coef, max_coef) in enumerate(
+                zip(self.min_coef_, self.max_coef_)
+            ):
+                # clipping is applied only to the first node.
+                self.coefs_[0][coef_idx] = np.clip(
+                    self.coefs_[0][coef_idx], min_coef, max_coef
+                )
 
     def _after_training(self):
         # This is useful only for multi models.
@@ -304,11 +323,21 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
         else:
             iprint = -1
 
+        bounds = [
+            [(min_val, max_val)] * self.hidden_layer_sizes[0]
+            for min_val, max_val in zip(self.min_coef_, self.max_coef_)
+        ]
+        bounds = list(chain(*bounds))
+        effective_bounds_len = len(bounds)
+        for _ in range(len(packed_coef_inter) - effective_bounds_len):
+            bounds.append((-np.inf, np.inf))
+
         opt_res = scipy.optimize.minimize(
             self._loss_grad_constrained_lbfgs,
             packed_coef_inter,
             method="L-BFGS-B",
             jac=True,
+            bounds=bounds,
             options={
                 "maxfun": self.max_fun,
                 "maxiter": self.max_iter,
@@ -369,7 +398,6 @@ class ConstrainedMultilayerPerceptron(BaseConstrainedMultilayerPerceptron):
         loss, coef_grads, intercept_grads = self._backprop(
             X, y, activations, deltas, coef_grads, intercept_grads
         )
-        self._update_coef_using_constrain(coef_grads)  # it throws error.
         grad = _pack(coef_grads, intercept_grads)
         self._save_mse(loss)
         return loss, grad
