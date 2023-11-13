@@ -15,6 +15,9 @@ from constrained_linear_regression.constrained_multi_layer_perceptron import (
 from constrained_linear_regression.selective_drop_linear_regression import (
     SelectiveDropLinearRegression,
 )
+from constrained_linear_regression.selective_drop_positive_linear_regression import (
+    SelectiveDropPositiveLinearRegression,
+)
 from constrained_linear_regression.selective_drop_multi_layer_perceptron import (
     SelectiveDropMultilayerPerceptron,
 )
@@ -28,6 +31,18 @@ def test_unconstrained():
     baseline = LinearRegression()
     baseline.fit(X, y)
     assert model.coef_.min() < 0
+    assert np.allclose(baseline.coef_, model.coef_)
+    assert np.isclose(baseline.intercept_, model.intercept_)
+
+
+def test_selective_positive_drop_positive():
+    X, Y = load_linnerud(return_X_y=True)
+    y = Y[:, 0]
+    model = SelectiveDropPositiveLinearRegression()
+    model.fit(X, y)
+    baseline = LinearRegression(positive=True)
+    baseline.fit(X, y)
+    assert model.coef_.min() >= 0
     assert np.allclose(baseline.coef_, model.coef_)
     assert np.isclose(baseline.intercept_, model.intercept_)
 
