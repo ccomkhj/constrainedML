@@ -2,11 +2,11 @@
 
 ## Overview
 
-This repository is dedicated to hosting and sharing advanced techniques in machine learning algorithms, particularly focusing on constraining the weights of certain inputs in regression and multi-layer perceptron. Inspired by the robust scikit-learn library, we have ventured into reverse engineering and extending its capabilities to fit custom requirements for specific types of learning problems.
+This repository is dedicated to hosting and sharing advanced techniques in machine learning algorithms, particularly focusing on constraining the weights of certain inputs in regression and multi-layer perceptron. I have ventured into reverse engineering and extending its capabilities to fit custom requirements for specific types of learning problems.
 
 ## Purpose
 
-The purpose of this repository is to provide a resource for machine learning practitioners looking to impose constraints on the input features' weights, which could be critical in certain domains such as finance, healthcare, and operational research. The reverse-engineered solutions herein allow for greater control over the machine learning model's behavior, ensuring that the influence of some features remains within desired boundaries.
+The purpose of this repository is to provide a resource for machine learning practitioners looking to impose constraints on the input features' weights. The reverse-engineered solutions herein allow for greater control over the machine learning model's behavior, ensuring that the influence of some features remains within desired boundaries.
 
 ## Tutorials
 
@@ -29,7 +29,7 @@ We provide detailed tutorials for the following topics:
 To get started with these tutorials and code, you should clone the repository and navigate to the `tutorial` directory where you can find the markdown files with detailed explanations and code samples.
 
 ```bash
-git clone https://github.com/your-github-username/multi-constrained-models.git
+git clone https://github.com/ccomkhj/constrainedML.git
 cd multi-constrained-models/tutorial
 ```
 ### Contributing
@@ -38,5 +38,6 @@ We welcome contributions from the community! Whether it's improving the tutorial
 ### Acknowledgments
 Thanks to the scikit-learn developers for their work on creating a comprehensive machine learning library.
 This project was inspired by the need for industry-specific machine learning models that require tailored constraints.
-Contact
-If you have any questions or feedback, please open an issue in the repository, and we'll get back to you as soon as possible.
+
+### Contact
+If you have any questions or feedback, please open an issue in the repository.
