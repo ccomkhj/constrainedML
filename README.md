@@ -10,7 +10,7 @@ The purpose of this repository is to provide a resource for machine learning pra
 
 ## Tutorials
 
-We provide detailed tutorials for the following topics:
+I provide detailed tutorials for the following topics:
 
 - **Multi-Constrained Linear Regression**: This tutorial takes you through the steps of creating a linear regression model that allows constraints to be placed on the weights of multiple input features.
   - [Multi-Constrained Linear Regression Tutorial](tutorial/MultiConstrainedLinearRegression.md)
@@ -30,10 +30,10 @@ To get started with these tutorials and code, you should clone the repository an
 
 ```bash
 git clone https://github.com/ccomkhj/constrainedML.git
-cd multi-constrained-models/tutorial
+cd constrainedML/tutorial
 ```
 ### Contributing
-We welcome contributions from the community! Whether it's improving the tutorials, extending the features of the models, or fixing bugs, please feel free to fork the repo, make your changes, and submit a pull request.
+Welcome contributions from the community! Whether it's improving the tutorials, extending the features of the models, or fixing bugs, please feel free to fork the repo, make your changes, and submit a pull request.
 
 ### Acknowledgments
 Thanks to the scikit-learn developers for their work on creating a comprehensive machine learning library.
