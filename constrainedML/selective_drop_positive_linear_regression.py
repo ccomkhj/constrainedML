@@ -1,4 +1,4 @@
-from constrained_linear_regression.base import BaseSelectiveDropPositiveLinearRegression
+from constrainedML.base import BaseSelectiveDropPositiveLinearRegression
 
 from scipy import optimize
 from joblib import Parallel
@@ -25,6 +25,7 @@ class SelectiveDropPositiveLinearRegression(BaseSelectiveDropPositiveLinearRegre
         X = X[:, selected_features]
         X_offset = X_offset[selected_features]
         X_scale = X_scale[selected_features]
+        self.n_features_in_ = feature_count
 
         if self.positive:
             if y.ndim < 2:

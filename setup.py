@@ -8,14 +8,14 @@ if os.path.exists("README.md"):
         long_description = fh.read()
 
 setuptools.setup(
-    name="constrained_linear_regression",
-    version="0.0.4",
-    author="David Dale",
-    author_email="dale.david@mail.ru",
+    name="constrainedML",
+    version="0.0.1",
+    author="Huijo",
+    author_email="huijo@hexafarms.com",
     description=description,
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/avidale/constrained-linear-regression",
+    url="https://github.com/ccomkhj/constrainedML",
     packages=setuptools.find_packages(),
     license="MIT",
     classifiers=[
@@ -25,7 +25,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        'scikit-learn<=1.1',
-        'numpy',
+        "scikit-learn<=1.1",
+        "numpy",
     ],
 )

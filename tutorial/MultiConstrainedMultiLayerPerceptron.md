@@ -1,4 +1,4 @@
-# constrained-linear-regression with Darts
+# constrained-MLP with Darts
 
 This package also provides out-of-box compatibility with [Unit8's Darts](https://unit8co.github.io/darts/), a forecasting library. Darts supports a rich variety of models including but not limited to ARIMA, Prophet, Theta, and a host of others. 
 
@@ -10,7 +10,7 @@ Here's an example using dummy data:
 ```Python
 import numpy as np
 import pandas as pd
-from constrained_linear_regression.multi_constrained_multi_layer_perceptron import MultiConstrainedMultilayerPerceptron
+from constrainedML.multi_constrained_multi_layer_perceptron import MultiConstrainedMultilayerPerceptron
 from darts.models import RegressionModel
 from darts.timeseries import TimeSeries
 from darts.dataprocessing.transformers import Scaler

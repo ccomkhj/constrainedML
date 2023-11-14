@@ -6,19 +6,19 @@ from sklearn.datasets import load_linnerud
 from sklearn.linear_model import LinearRegression
 from sklearn.neural_network import MLPRegressor
 
-from constrained_linear_regression.constrained_linear_regression import (
+from constrainedML.constrained_linear_regression import (
     ConstrainedLinearRegression,
 )
-from constrained_linear_regression.constrained_multi_layer_perceptron import (
+from constrainedML.constrained_multi_layer_perceptron import (
     ConstrainedMultilayerPerceptron,
 )
-from constrained_linear_regression.selective_drop_linear_regression import (
+from constrainedML.selective_drop_linear_regression import (
     SelectiveDropLinearRegression,
 )
-from constrained_linear_regression.selective_drop_positive_linear_regression import (
+from constrainedML.selective_drop_positive_linear_regression import (
     SelectiveDropPositiveLinearRegression,
 )
-from constrained_linear_regression.selective_drop_multi_layer_perceptron import (
+from constrainedML.selective_drop_multi_layer_perceptron import (
     SelectiveDropMultilayerPerceptron,
 )
 

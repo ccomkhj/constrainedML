@@ -12,7 +12,7 @@ Here's an example using dummy data:
 ```Python
 import numpy as np
 import pandas as pd
-from constrained_linear_regression.multi_constrained_linear_regression import MultiConstrainedLinearRegression
+from constrainedML.multi_constrained_linear_regression import MultiConstrainedLinearRegression
 from darts.models import RegressionModel
 from darts.timeseries import TimeSeries
 from darts.dataprocessing.transformers import Scaler

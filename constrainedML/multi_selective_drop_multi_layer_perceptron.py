@@ -9,7 +9,7 @@ import scipy.optimize
 from sklearn.utils.optimize import _check_optimize_result
 from sklearn.utils import check_random_state
 
-from constrained_linear_regression.selective_drop_multi_layer_perceptron import (
+from constrainedML.selective_drop_multi_layer_perceptron import (
     SelectiveDropMultilayerPerceptron,
     _pack,
 )

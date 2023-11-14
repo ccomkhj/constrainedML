@@ -19,9 +19,7 @@ from sklearn.model_selection import train_test_split
 from scipy import sparse
 
 
-class BaseSelectiveDropPositiveLinearRegression(
-    MultiOutputMixin, RegressorMixin, LinearModel
-):
+class BaseSelectiveDropPositiveLinearRegression(RegressorMixin, LinearModel):
     """
     Ordinary least squares Linear Regression.
 
@@ -132,7 +130,7 @@ class BaseSelectiveDropPositiveLinearRegression(
     def __init__(
         self,
         *,
-        fit_intercept=True,
+        fit_intercept=False,
         copy_X=True,
         n_jobs=None,
         positive=True,

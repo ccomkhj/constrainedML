@@ -1,7 +1,7 @@
 import numpy as np
 from itertools import chain
 
-from constrained_linear_regression.constrained_multi_layer_perceptron import (
+from constrainedML.constrained_multi_layer_perceptron import (
     ConstrainedMultilayerPerceptron,
     _pack,
 )

@@ -1,33 +1,33 @@
 import numpy as np
 from sklearn.datasets import load_linnerud
-from constrained_linear_regression.constrained_linear_regression import (
+from constrainedML.constrained_linear_regression import (
     ConstrainedLinearRegression,
 )
-from constrained_linear_regression.multi_constrained_linear_regression import (
+from constrainedML.multi_constrained_linear_regression import (
     MultiConstrainedLinearRegression,
 )
-from constrained_linear_regression.constrained_multi_layer_perceptron import (
+from constrainedML.constrained_multi_layer_perceptron import (
     ConstrainedMultilayerPerceptron,
 )
-from constrained_linear_regression.multi_constrained_multi_layer_perceptron import (
+from constrainedML.multi_constrained_multi_layer_perceptron import (
     MultiConstrainedMultilayerPerceptron,
 )
-from constrained_linear_regression.selective_drop_linear_regression import (
+from constrainedML.selective_drop_linear_regression import (
     SelectiveDropLinearRegression,
 )
-from constrained_linear_regression.selective_drop_multi_layer_perceptron import (
+from constrainedML.selective_drop_multi_layer_perceptron import (
     SelectiveDropMultilayerPerceptron,
 )
-from constrained_linear_regression.multi_selective_drop_linear_regression import (
+from constrainedML.multi_selective_drop_linear_regression import (
     MultiSelectiveDropLinearRegression,
 )
-from constrained_linear_regression.multi_selective_drop_multi_layer_perceptron import (
+from constrainedML.multi_selective_drop_multi_layer_perceptron import (
     MultiSelectiveDropMultilayerPerceptron,
 )
-from constrained_linear_regression.selective_drop_positive_linear_regression import (
+from constrainedML.selective_drop_positive_linear_regression import (
     SelectiveDropPositiveLinearRegression,
 )
-from constrained_linear_regression.multi_selective_drop_positive_linear_regression import (
+from constrainedML.multi_selective_drop_positive_linear_regression import (
     MultiSelectiveDropPositiveLinearRegression,
 )
 
