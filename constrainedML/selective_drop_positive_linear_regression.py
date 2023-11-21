@@ -70,5 +70,5 @@ class SelectiveDropPositiveLinearRegression(BaseSelectiveDropPositiveLinearRegre
             raise ValueError("The input arrays must have the same length")
 
         # Find the indices where both array elements are not 0
-        non_zero_indices = np.where((max_coef != 0) | (min_coef != 0))[0]
+        non_zero_indices = np.where((min_coef != 0))[0]
         return non_zero_indices
