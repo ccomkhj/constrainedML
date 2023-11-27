@@ -9,8 +9,8 @@ import numpy as np
 class SelectiveDropPositiveLinearRegression(BaseSelectiveDropPositiveLinearRegression):
     """ """
 
-    def fit(self, X, y, min_coef=None, max_coef=None):
-        X, y, X_offset, y_offset, X_scale = self._preprocess(X, y)
+    def fit(self, X, y, min_coef=None, max_coef=None, sample_weight=None):
+        X, y, X_offset, y_offset, X_scale = self._preprocess(X, y, sample_weight)
         feature_count = X.shape[-1]
         self.min_coef_ = self._verify_coef(feature_count, min_coef, -np.inf).flatten()
         self.max_coef_ = self._verify_coef(feature_count, max_coef, np.inf).flatten()

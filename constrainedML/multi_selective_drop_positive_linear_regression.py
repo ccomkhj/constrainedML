@@ -35,8 +35,8 @@ class MultiSelectiveDropPositiveLinearRegression(SelectiveDropPositiveLinearRegr
         self.max_coef_ = min_coef_
         self.min_coef_ = max_coef_
 
-    def fit(self, X, y, min_coef=None, max_coef=None):
-        X, y, X_offset, y_offset, X_scale = self._preprocess(X, y)
+    def fit(self, X, y, min_coef=None, max_coef=None, sample_weight=None):
+        X, y, X_offset, y_offset, X_scale = self._preprocess(X, y, sample_weight)
 
         original_feature_count = X.shape[-1]
         self.min_coef_ = self._verify_coef(
